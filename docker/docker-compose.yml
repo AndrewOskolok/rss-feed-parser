@@ -1,0 +1,43 @@
+version: "3.8"
+
+services:
+  node-app:
+    build:
+      context: ../Backend
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    depends_on:
+      - mysql
+    environment:
+      PORT: 3001
+      ALLOWED_ORIGIN: http://localhost:3000
+      FEED_FOR_PARSING: https://lifehacker.com/feed/rss
+      PERIOD_IN_MINUTES: 5
+      MYSQL_HOST: mysql
+      MYSQL_USER: parser
+      MYSQL_PASSWORD: HJuygyc234
+      MYSQL_DB: rss_parser
+
+  mysql:
+    image: mysql:8
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: HJuygyc234
+      MYSQL_DATABASE: rss_parser
+      MYSQL_USER: parser
+      MYSQL_PASSWORD: HJuygyc234
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  react-app:
+    build:
+      context: ../Frontend
+      dockerfile: Dockerfile.react
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - REACT_APP_SERVER_URL=http://localhost:3001
